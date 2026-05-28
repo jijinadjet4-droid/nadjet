@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>همم الحافظات - مغامرة القرآن</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Tahoma', 'Cairo', 'Amiri', system-ui, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* الخلفية المتحركة */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(145deg, #0f2e4a 0%, #1a4a6f 50%, #0d3b5e 100%);
+            overflow: hidden;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 250, 0.25);
+            border-radius: 1000px;
+            animation: floatCloud linear infinite;
+        }
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: inherit;
+            border-radius: 50%;
+        }
+        .cloud::before { width: 60%; height: 120%; top: -50%; left: 15%; }
+        .cloud::after { width: 50%; height: 100%; top: -30%; right: 15%; }
+        @keyframes floatCloud {
+            0% { transform: translateX(-30%); }
+            100% { transform: translateX(120vw); }
+        }
+
+        .star {
+            position: absolute;
+            background: #fff9c4;
+            border-radius: 50%;
+            animation: twinkle 2s infinite alternate;
+        }
+        @keyframes twinkle {
+            0% { opacity: 0.2; transform: scale(0.8);}
+            100% { opacity: 1; transform: scale(1.2);}
+        }
+
+        .planet {
+            position: absolute;
+            background: radial-gradient(circle, #f3c26b, #c97e2a);
+            border-radius: 50%;
+            animation: floatPlanet 18s infinite alternate;
+        }
+        @keyframes floatPlanet {
+            0% { transform: translateY(0px);}
+            100% { transform: translateY(35px);}
+        }
+
+        .flower {
+            position: absolute;
+            font-size: 20px;
+            opacity: 0.4;
+            animation: floatFlower 14s infinite linear;
+        }
+        @keyframes floatFlower {
+            0% { transform: translateX(-10%) translateY(0) rotate(0deg); opacity: 0.2;}
+            100% { transform: translateX(110vw) translateY(-40px) rotate(360deg); opacity: 0.6;}
+        }
+
+        /* الحاوية الرئيسية */
+        .game-container {
+            max-width: 700px;
+            margin: 15px auto;
+            padding: 15px;
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* عنوان المخيم */
+        .camp-title {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .camp-title h1 {
+            background: linear-gradient(135deg, #f4b942, #e67e22);
+            display: inline-block;
+            padding: 10px 30px;
+            border-radius: 60px;
+            color: #1e3a2f;
+            font-size: 1.8rem;
+            font-weight: bold;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border: 2px solid #ffefb9;
+        }
+
+        /* الشخصية المتحركة في الأعلى */
+        .character-header {
+            background: rgba(255, 248, 235, 0.95);
+            backdrop-filter: blur(8px);
+            border-radius: 60px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,215,150,0.6);
+        }
+
+        .character-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #1a3a2f;
+            padding: 5px 18px;
+            border-radius: 50px;
+        }
+
+        .character-emoji {
+            font-size: 2.8rem;
+            animation: bounce 0.8s ease-in-out infinite;
+            filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.2));
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(5deg); }
+        }
+
+        .character-message {
+            font-weight: bold;
+            color: #ffefb9;
+            font-size: 0.9rem;
+        }
+
+        .timer-score {
+            display: flex;
+            gap: 12px;
+            background: #1a3a2f;
+            padding: 5px 18px;
+            border-radius: 50px;
+            color: #ffefb9;
+        }
+
+        .timer-box, .score-box {
+            text-align: center;
+        }
+
+        .timer-time {
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: monospace;
+            direction: ltr;
+        }
+
+        /* الخريطة - مراحل */
+        .map-header {
+            text-align: center;
+            margin: 15px 0;
+        }
+        .map-header h3 {
+            color: #ffefb9;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: #1a3a2f80;
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 40px;
+        }
+
+        .stages-track {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .stage-dot {
+            background: #d4b47c;
+            width: 60px;
+            padding: 10px 0;
+            text-align: center;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #3a2a1a;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 2px solid #b48b54;
+        }
+
+        .stage-dot.completed {
+            background: #2e7d32;
+            color: white;
+            border-color: #1b5e20;
+        }
+
+        .stage-dot.active {
+            background: #f4b942;
+            color: #1e3a2f;
+            transform: scale(1.05);
+            box-shadow: 0 0 10px #f4b942;
+        }
+
+        .stage-dot.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .stage-dot.unlocked:not(.completed) {
+            cursor: pointer;
+            background: #ffe0a3;
+        }
+
+        /* بطاقة التحدي */
+        .challenge-card {
+            background: rgba(255, 248, 235, 0.96);
+            backdrop-filter: blur(10px);
+            border-radius: 48px;
+            padding: 25px 20px;
+            margin: 15px 0;
+            text-align: center;
+            border: 2px solid #f4b942;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .challenge-image {
+            font-size: 5rem;
+            margin: 15px 0;
+        }
+
+        .challenge-question {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 15px 0;
+            line-height: 1.5;
+            color: #1e3a2f;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .option-btn {
+            background: #f0e5d2;
+            border: 2px solid #d4b47c;
+            border-radius: 60px;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+            font-family: inherit;
+        }
+
+        .option-btn:active {
+            transform: scale(0.97);
+            background: #ffe0a3;
+        }
+
+        /* ترتيب الآية */
+        .words-pool {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            min-height: 80px;
+            background: #e9decc;
+            padding: 15px;
+            border-radius: 30px;
+        }
+
+        .word-card {
+            background: #f4b942;
+            padding: 10px 14px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+            color: #1e3a2f;
+            font-size: 0.9rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        .word-card:active {
+            transform: scale(0.95);
+        }
+
+        .sentence-builder {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0;
+            min-height: 70px;
+            background: #1a3a2f;
+            padding: 15px;
+            border-radius: 30px;
+        }
+
+        .built-word {
+            background: #2c7a4a;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+            font-size: 0.9rem;
+        }
+
+        .built-word:active {
+            background: #1f5a36;
+        }
+
+        .feedback-msg {
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: bold;
+        }
+
+        .next-btn, .reset-game-btn {
+            background: #2c7a4a;
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .reset-game-btn {
+            background: #9e6d3e;
+            margin-top: 10px;
+        }
+
+        .finish-screen {
+            text-align: center;
+            padding: 30px;
+        }
+
+        @media (max-width: 550px) {
+            .character-emoji { font-size: 2rem; }
+            .character-message { font-size: 0.7rem; }
+            .timer-time { font-size: 1.1rem; }
+            .stage-dot { width: 48px; font-size: 0.55rem; padding: 8px 0; }
+            .challenge-question { font-size: 1rem; }
+            .word-card, .built-word { padding: 6px 10px; font-size: 0.75rem; }
+            .camp-title h1 { font-size: 1.2rem; padding: 6px 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="animated-bg" id="animatedBg"></div>
+
+<div class="game-container">
+    <!-- عنوان المخيم -->
+    <div class="camp-title">
+        <h1>🏆مخيم همم الحافظات 🏆</h1>
+    </div>
+
+    <!-- الشخصية المتحركة في الأعلى -->
+    <div class="character-header">
+        <div class="character-box">
+            <div class="character-emoji" id="characterEmoji">🧕💖</div>
+            <div class="character-message" id="characterMsg">أهلاً يا حافظة القرآن! 🌙</div>
+        </div>
+        <div class="timer-score">
+            <div class="timer-box">
+                <div>⏱️</div>
+                <div class="timer-time" id="globalTimer">00:00</div>
+            </div>
+            <div class="score-box">
+                <div>⭐</div>
+                <div id="totalPoints">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- خريطة المراحل -->
+    <div class="map-header">
+        <h3>🗺️ مراحل التحدي 🗺️</h3>
+    </div>
+    <div class="stages-track" id="stagesTrack"></div>
+
+    <!-- منطقة التحدي الحالية -->
+    <div id="challengeArea"></div>
+
+    <button id="resetGameBtn" class="reset-game-btn">🔄 بدء رحلة جديدة</button>
+</div>
+
+<script>
+    // ---------- المؤثرات الصوتية ----------
+    let audioContext = null;
+    function playClapSound() {
+        try {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            const now = audioContext.currentTime;
+            const gain = audioContext.createGain();
+            gain.connect(audioContext.destination);
+            const osc1 = audioContext.createOscillator();
+            osc1.connect(gain);
+            osc1.frequency.value = 880;
+            osc1.type = 'sine';
+            const osc2 = audioContext.createOscillator();
+            osc2.connect(gain);
+            osc2.frequency.value = 1250;
+            osc2.type = 'sine';
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+            osc1.start();
+            osc2.start();
+            osc1.stop(now + 0.3);
+            osc2.stop(now + 0.3);
+        } catch(e) { console.log("صوت غير مدعوم"); }
+    }
+
+    // ---------- بيانات المراحل (7 مراحل) ----------
+    const stages = [
+        { id: 0, name: "🎯 سؤال", type: "mcq", unlocked: true, completed: false, points: 20,
+          question: "ما هي أطول آية في القرآن الكريم؟",
+          options: ["آية الكرسي", "آية الدين (المداينة)", "آية الربا", "آية الوصية"],
+          correct: "آية الدين (المداينة)" },
+        
+        { id: 1, name: "🧩 لغز", type: "riddle", unlocked: false, completed: false, points: 25,
+          question: "ما هو الشيء الذي يقرأه المؤمن في صلاته، إذا سقط منه حرف أصبح شيء آخر؟",
+          correct: "القرآن" },
+        
+        { id: 2, name: "🖼️ صورة", type: "image", unlocked: false, completed: false, points: 25,
+          question: "ما السورة التي تدل عليها هذه الصورة؟",
+          image: "🐘🕋",
+          correct: "الفيل" },
+        
+        { id: 3, name: "📝 ترتيب", type: "arrange", unlocked: false, completed: false, points: 30,
+          words: ["رَبَّنَا", "اغْفِرْ", "لِي", "وَلِوَالِدَيَّ", "وَلِلْمُؤْمِنِينَ", "يَوْمَ", "يَقُومُ", "الْحِسَابُ"],
+          correct: ["رَبَّنَا", "اغْفِرْ", "لِي", "وَلِوَالِدَيَّ", "وَلِلْمُؤْمِنِينَ", "يَوْمَ", "يَقُومُ", "الْحِسَابُ"] },
+        
+        { id: 4, name: "❓ سؤال", type: "choices", unlocked: false, completed: false, points: 20,
+          question: "من هو أول من كتب 'بسم الله الرحمن الرحيم'؟",
+          options: ["النبي محمد ﷺ", "أبو بكر الصديق", "سليمان عليه السلام", "عمر بن الخطاب"],
+          correct: "سليمان عليه السلام" },
+        
+        { id: 5, name: "🔍 لغز صعب", type: "riddle2", unlocked: false, completed: false, points: 30,
+          question: "ما هي السورة التي تنتهي كل آياتها بحرف الدال؟",
+          correct: "الإخلاص" },
+        
+        { id: 6, name: "🏁 ختام", type: "final", unlocked: false, completed: false, points: 30,
+          question: "ما هو أول شيء خلقه الله؟",
+          correct: "القلم" }
+    ];
+
+    let playerPoints = 0;
+    let globalSeconds = 0;
+    let gameStarted = false;
+    let timerInterval = null;
+    let currentStageId = 0;
+    let arrangeSelected = [];
+
+    // عناصر DOM
+    const stagesTrack = document.getElementById('stagesTrack');
+    const challengeArea = document.getElementById('challengeArea');
+    const characterEmoji = document.getElementById('characterEmoji');
+    const characterMsg = document.getElementById('characterMsg');
+    const globalTimerSpan = document.getElementById('globalTimer');
+    const totalPointsSpan = document.getElementById('totalPoints');
+    const resetBtn = document.getElementById('resetGameBtn');
+
+    function updateTimerDisplay() {
+        let mins = Math.floor(globalSeconds / 60);
+        let secs = globalSeconds % 60;
+        globalTimerSpan.innerText = `${mins < 10 ? '0'+mins : mins}:${secs < 10 ? '0'+secs : secs}`;
+    }
+
+    function startGlobalTimer() {
+        if (!gameStarted && !allStagesCompleted()) {
+            gameStarted = true;
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!allStagesCompleted()) {
+                    globalSeconds++;
+                    updateTimerDisplay();
+                    saveProgress();
+                } else {
+                    if (timerInterval) clearInterval(timerInterval);
+                }
+            }, 1000);
+        }
+    }
+
+    function allStagesCompleted() {
+        return stages.every(s => s.completed === true);
+    }
+
+    function updateUI() {
+        totalPointsSpan.innerText = playerPoints;
+        // تحديث خريطة المراحل
+        stagesTrack.innerHTML = '';
+        stages.forEach((stage, idx) => {
+            const dot = document.createElement('div');
+            dot.classList.add('stage-dot');
+            if (stage.completed) dot.classList.add('completed');
+            else if (!stage.unlocked) dot.classList.add('locked');
+            else if (currentStageId === stage.id && !stage.completed) dot.classList.add('active');
+            else if (stage.unlocked && !stage.completed) dot.classList.add('unlocked');
+            dot.innerText = `${idx+1}\n${stage.name.substring(0,3)}`;
+            if (stage.unlocked && !stage.completed) {
+                dot.addEventListener('click', () => switchToStage(stage.id));
+            }
+            stagesTrack.appendChild(dot);
+        });
+
+        // التحقق من النهاية
+        if (allStagesCompleted()) {
+            if (timerInterval) clearInterval(timerInterval);
+            challengeArea.innerHTML = `
+                <div class="challenge-card finish-screen">
+                    <div style="font-size:4rem;">🏆🎉🏆</div>
+                    <h2>مبروووووك</h2>
+                    <p>الزمن: ${globalTimerSpan.innerText}</p>
+                    <p>النقاط: ${playerPoints}</p>
+                    <div style="font-size:3rem; animation:bounce 0.5s infinite;">🧕🌟</div>
+                </div>
+            `;
+            characterEmoji.innerText = '🏆🥳🏆';
+            characterMsg.innerText = `أحسنتِ! أنتِ حافظة متميزة في زمن ${globalTimerSpan.innerText}`;
+        } else {
+            loadCurrentChallenge();
+        }
+        saveProgress();
+    }
+
+    function switchToStage(stageId) {
+        const stage = stages[stageId];
+        if (stage && stage.unlocked && !stage.completed) {
+            currentStageId = stageId;
+            arrangeSelected = [];
+            loadCurrentChallenge();
+            updateUI();
+        }
+    }
+
+    function loadCurrentChallenge() {
+        const stage = stages[currentStageId];
+        if (!stage || stage.completed) return;
+        
+        startGlobalTimer();
+        
+        if (stage.type === 'mcq' || stage.type === 'choices') {
+            challengeArea.innerHTML = `
+                <div class="challenge-card">
+                    <div class="challenge-question">${stage.question}</div>
+                    <div class="options-grid" id="optionsGrid"></div>
+                    <div id="feedbackArea" class="feedback-msg"></div>
+                </div>
+            `;
+            const grid = document.getElementById('optionsGrid');
+            stage.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.innerText = opt;
+                btn.classList.add('option-btn');
+                btn.onclick = () => checkAnswer(opt);
+                grid.appendChild(btn);
+            });
+        }
+        else if (stage.type === 'riddle' || stage.type === 'riddle2' || stage.type === 'final') {
+            challengeArea.innerHTML = `
+                <div class="challenge-card">
+                    <div class="challenge-question">${stage.question}</div>
+                    <input type="text" id="textAnswer" class="option-btn" style="width:100%; text-align:center;" placeholder="اكتبي إجابتك هنا...">
+                    <button id="submitTextBtn" class="next-btn">✅ تأكيد</button>
+                    <div id="feedbackArea" class="feedback-msg"></div>
+                </div>
+            `;
+            document.getElementById('submitTextBtn').onclick = () => {
+                const input = document.getElementById('textAnswer');
+                checkAnswer(input.value.trim());
+            };
+        }
+        else if (stage.type === 'image') {
+            challengeArea.innerHTML = `
+                <div class="challenge-card">
+                    <div class="challenge-image">${stage.image}</div>
+                    <div class="challenge-question">${stage.question}</div>
+                    <input type="text" id="textAnswer" class="option-btn" style="width:100%; text-align:center;" placeholder="اسم السورة...">
+                    <button id="submitTextBtn" class="next-btn">✅ تأكيد</button>
+                    <div id="feedbackArea" class="feedback-msg"></div>
+                </div>
+            `;
+            document.getElementById('submitTextBtn').onclick = () => {
+                const input = document.getElementById('textAnswer');
+                checkAnswer(input.value.trim());
+            };
+        }
+        else if (stage.type === 'arrange') {
+            arrangeSelected = [];
+            // خلط الكلمات عشوائياً
+            const shuffledWords = [...stage.words];
+            for (let i = shuffledWords.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledWords[i], shuffledWords[j]] = [shuffledWords[j], shuffledWords[i]];
+            }
+            challengeArea.innerHTML = `
+                <div class="challenge-card">
+                    <div class="challenge-question">✨ رتبي الآية الكريمة ✨</div>
+                    <div class="words-pool" id="wordsPool"></div>
+                    <div class="sentence-builder" id="sentenceBuilder"></div>
+                    <button id="submitArrangeBtn" class="next-btn">✅ تأكيد الترتيب</button>
+                    <div id="feedbackArea" class="feedback-msg"></div>
+                </div>
+            `;
+            const wordsPoolDiv = document.getElementById('wordsPool');
+            const sentenceBuilderDiv = document.getElementById('sentenceBuilder');
+            
+            wordsPoolDiv.innerHTML = shuffledWords.map((word, idx) => 
+                `<div class="word-card" data-word="${word}">${word}</div>`
+            ).join('');
+            
+            sentenceBuilderDiv.innerHTML = '';
+            
+            // إضافة حدث للكلمات في الحوض
+            document.querySelectorAll('.word-card').forEach(el => {
+                el.addEventListener('click', () => {
+                    const word = el.getAttribute('data-word');
+                    arrangeSelected.push(word);
+                    renderArrangeUI(stage, shuffledWords);
+                });
+            });
+            
+            document.getElementById('submitArrangeBtn').onclick = () => checkArrangeAnswer(stage);
+        }
+    }
+    
+    function renderArrangeUI(stage, shuffledWords) {
+        const remainingWords = shuffledWords.filter(w => !arrangeSelected.includes(w));
+        const wordsPoolDiv = document.getElementById('wordsPool');
+        const sentenceBuilderDiv = document.getElementById('sentenceBuilder');
+        
+        wordsPoolDiv.innerHTML = remainingWords.map((word, idx) => 
+            `<div class="word-card" data-word="${word}">${word}</div>`
+        ).join('');
+        
+        sentenceBuilderDiv.innerHTML = arrangeSelected.map((word, idx) => 
+            `<div class="built-word" data-word="${word}" data-idx="${idx}">${word} ✖</div>`
+        ).join('');
+        
+        // إضافة حدث للكلمات في الحوض
+        document.querySelectorAll('.word-card').forEach(el => {
+            el.addEventListener('click', () => {
+                const word = el.getAttribute('data-word');
+                arrangeSelected.push(word);
+                renderArrangeUI(stage, shuffledWords);
+            });
+        });
+        
+        // إضافة حدث للكلمات في الجملة (لحذفها)
+        document.querySelectorAll('.built-word').forEach(el => {
+            el.addEventListener('click', () => {
+                const word = el.getAttribute('data-word');
+                const idx = arrangeSelected.indexOf(word);
+                if (idx !== -1) {
+                    arrangeSelected.splice(idx, 1);
+                    renderArrangeUI(stage, shuffledWords);
+                }
+            });
+        });
+    }
+
+    function checkArrangeAnswer(stage) {
+        if (JSON.stringify(arrangeSelected) === JSON.stringify(stage.correct)) {
+            handleCorrect();
+        } else {
+            handleWrong("الترتيب غير صحيح. حاولي مرة أخرى!");
+        }
+    }
+
+    function checkAnswer(answer) {
+        const stage = stages[currentStageId];
+        if (!stage) return;
+        if (answer.toLowerCase() === stage.correct.toLowerCase()) {
+            handleCorrect();
+        } else {
+            handleWrong(stage.correct);
+        }
+    }
+
+    function handleCorrect() {
+        const stage = stages[currentStageId];
+        playClapSound();
+        playerPoints += stage.points;
+        stage.completed = true;
+        
+        // فتح المرحلة التالية
+        const nextStage = stages.find(s => s.id === stage.id + 1);
+        if (nextStage) nextStage.unlocked = true;
+        
+        // الانتقال للمرحلة التالية غير المكتملة
+        const nextUnlocked = stages.find(s => !s.completed && s.unlocked);
+        if (nextUnlocked) currentStageId = nextUnlocked.id;
+        
+        characterEmoji.innerText = '🎉😄🎊';
+        characterMsg.innerText = `أحسنتِ! +${stage.points} نقطة 🌟`;
+        
+        const feedbackDiv = document.getElementById('feedbackArea');
+        if (feedbackDiv) {
+            feedbackDiv.innerHTML = `✅ صحيح! +${stage.points} نقطة`;
+            feedbackDiv.style.background = '#e0f0e0';
+            feedbackDiv.style.color = '#1f6d43';
+        }
+        
+        updateUI();
+        
+        setTimeout(() => {
+            if (!allStagesCompleted()) {
+                characterEmoji.innerText = '🧕💖';
+                characterMsg.innerText = 'رائعة! إلى التحدي التالي 🚀';
+            }
+        }, 1200);
+    }
+
+    function handleWrong(correctAnswer) {
+        const stage = stages[currentStageId];
+        characterEmoji.innerText = '😢💔';
+        characterMsg.innerText = 'حاولي مرة أخرى.. أنتِ قادرة 💪';
+        
+        const feedbackDiv = document.getElementById('feedbackArea');
+        if (feedbackDiv) {
+            feedbackDiv.innerHTML = `❌ إجابة خاطئة. ${correctAnswer} حاولي مجدداً!`;
+            feedbackDiv.style.background = '#ffefed';
+            feedbackDiv.style.color = '#a1220a';
+        }
+        
+        if (stage.type === 'arrange') {
+            arrangeSelected = [];
+            loadCurrentChallenge();
+        }
+        
+        setTimeout(() => {
+            if (!stage.completed) {
+                characterEmoji.innerText = '🤔📖';
+                characterMsg.innerText = 'لا تستسلمي.. فكري مرة أخرى 🌙';
+            }
+        }, 1500);
+    }
+
+    // حفظ التقدم
+    function saveProgress() {
+        const progress = {
+            stages: stages.map(s => ({ completed: s.completed, unlocked: s.unlocked })),
+            playerPoints: playerPoints,
+            globalSeconds: globalSeconds,
+            gameStarted: gameStarted,
+            currentStageId: currentStageId
+        };
+        localStorage.setItem('hemmAlhafidhatGame', JSON.stringify(progress));
+    }
+
+    function loadProgress() {
+        const saved = localStorage.getItem('hemmAlhafidhatGame');
+        if (!saved) return false;
+        try {
+            const data = JSON.parse(saved);
+            data.stages.forEach((savedStage, idx) => {
+                if (stages[idx]) {
+                    stages[idx].completed = savedStage.completed;
+                    stages[idx].unlocked = savedStage.unlocked;
+                }
+            });
+            playerPoints = data.playerPoints || 0;
+            globalSeconds = data.globalSeconds || 0;
+            gameStarted = data.gameStarted || false;
+            currentStageId = data.currentStageId || 0;
+            updateTimerDisplay();
+            if (gameStarted && !allStagesCompleted()) {
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    if (!allStagesCompleted()) {
+                        globalSeconds++;
+                        updateTimerDisplay();
+                        saveProgress();
+                    } else {
+                        if (timerInterval) clearInterval(timerInterval);
+                    }
+                }, 1000);
+            }
+            return true;
+        } catch(e) { return false; }
+    }
+
+    function fullReset() {
+        if (confirm("✨ هل تريدين بدء رحلة جديدة؟ ✨")) {
+            if (timerInterval) clearInterval(timerInterval);
+            stages.forEach((stage, idx) => {
+                stage.completed = false;
+                stage.unlocked = (idx === 0);
+            });
+            playerPoints = 0;
+            globalSeconds = 0;
+            gameStarted = false;
+            currentStageId = 0;
+            arrangeSelected = [];
+            updateTimerDisplay();
+            characterEmoji.innerText = '🧕💖';
+            characterMsg.innerText = 'رحلة جديدة! بالتوفيق يا حافظة القرآن 🌸';
+            updateUI();
+            localStorage.removeItem('hemmAlhafidhatGame');
+        }
+    }
+
+    // خلفية متحركة جميلة
+    function initBackground() {
+        const bg = document.getElementById('animatedBg');
+        for(let i=0;i<10;i++) {
+            let cloud = document.createElement('div');
+            cloud.classList.add('cloud');
+            let w = 80 + Math.random() * 120;
+            cloud.style.width = w + 'px';
+            cloud.style.height = (w * 0.55) + 'px';
+            cloud.style.top = Math.random() * 80 + '%';
+            cloud.style.animationDuration = 15 + Math.random() * 35 + 's';
+            cloud.style.opacity = 0.2 + Math.random() * 0.3;
+            bg.appendChild(cloud);
+        }
+        for(let i=0;i<100;i++) {
+            let star = document.createElement('div');
+            star.classList.add('star');
+            let sz = 2 + Math.random() * 5;
+            star.style.width = sz + 'px';
+            star.style.height = sz + 'px';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.left = Math.random() * 100 + '%';
+            bg.appendChild(star);
+        }
+        for(let i=0;i<5;i++) {
+            let planet = document.createElement('div');
+            planet.classList.add('planet');
+            let ps = 25 + Math.random() * 50;
+            planet.style.width = ps + 'px';
+            planet.style.height = ps + 'px';
+            planet.style.bottom = Math.random() * 80 + '%';
+            planet.style.right = Math.random() * 90 + '%';
+            bg.appendChild(planet);
+        }
+        const flowers = ['🌸', '🌼', '🌻', '⭐', '✨'];
+        for(let i=0;i<25;i++) {
+            let fl = document.createElement('div');
+            fl.classList.add('flower');
+            fl.innerText = flowers[Math.floor(Math.random() * flowers.length)];
+            fl.style.fontSize = (12 + Math.random() * 18) + 'px';
+            fl.style.top = Math.random() * 100 + '%';
+            fl.style.animationDuration = 10 + Math.random() * 20 + 's';
+            bg.appendChild(fl);
+        }
+    }
+    initBackground();
+
+    resetBtn.addEventListener('click', fullReset);
+    
+    const hasProgress = loadProgress();
+    if (!hasProgress) fullReset();
+    else updateUI();
+</script>
+</body>
+</html>
